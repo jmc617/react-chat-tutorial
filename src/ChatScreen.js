@@ -3,6 +3,7 @@ import Chatkit from '@pusher/chatkit'
 import MessageList from './components/MessageList'
 import SendMessageForm from './components/SendMessageForm'
 import TypingIndicator from './components/TypingIndicator'
+import WhosOnlineList from './components/WhosOnlineList'
 
 class ChatScreen extends Component {
     constructor(props) {
@@ -62,7 +63,10 @@ class ChatScreen extends Component {
                                     username => username !== user.name
                                 ),
                             })
-                        }
+                        },
+                        onUserCameOnline: () => this.forceUpdate(),
+                        onUserWentOffline: () => this.forceUpdate(),
+                        onUserJoined: () => this.forceUpdate(),
                     }
                 })
             })
@@ -101,7 +105,10 @@ class ChatScreen extends Component {
             <div style={styles.container}>
                 <div style={styles.chatContainer}>
                     <aside style={styles.whosOnlineListContainer}>
-                        <h2>Who's online Placeholder</h2>
+                        <WhosOnlineList
+                            currentUser={this.state.currentUser}
+                            users={this.state.currentRoom.users}
+                        />
                     </aside>
                     <section style={styles.chatListContainer}>
                         <MessageList
