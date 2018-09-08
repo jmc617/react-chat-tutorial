@@ -25,6 +25,20 @@ class ChatScreen extends Component {
             .connect()
             .then(currentUser => {
                 this.setState({ currentUser })
+                return currentUser.suscribeToRoom({
+                    roomId: 15641560,
+                    messageLimit: 100,
+                    hooks: {
+                        onNewMessage: message => {
+                            this.setState({
+                                messages: [...this.state.messages, message],
+                            })
+                        }
+                    }
+                })
+            })
+            .then(currentRoom => {
+                this.setState({ currentRoom })
             })
             .catch(error => console.error('error', error))
     }
@@ -61,7 +75,10 @@ class ChatScreen extends Component {
                         <h2>Who's online Placeholder</h2>
                     </aside>
                     <section style={styles.chatListContainer}>
-                        <h2>Chat Placeholder</h2>
+                        <MessageList
+                            messages={this.state.messages}
+                            style={styles.chatList}
+                        />
                     </section>
                 </div>
             </div>
