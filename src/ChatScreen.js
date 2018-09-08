@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import Chatkit from '@pusher/chatkit'
 import MessageList from './components/MessageList'
+import SendMessageForm from './components/SendMessageForm'
+import TypingIndicator from './components/TypingIndicator'
 
 class ChatScreen extends Component {
     constructor(props) {
@@ -8,8 +10,23 @@ class ChatScreen extends Component {
         this.state = {
             currentUser: {},
             currentRoom: {},
-            messages: []
+            messages: [],
+            usersWhoAreTyping: [],
         }
+        this.sendMessage = this.sendMessage.bind(this)
+        this.sendTypingEvent = this.sendTypingEvent.bind(this)
+    }
+    sendTypingEvent() {
+        this.state.currentUser
+            .isTypingIn({ roomId: this.state.currentRoom.id })
+            .catch(error => console.error('error', error))
+    }
+
+   sendMessage(text) {
+        this.state.currentUser.sendMessage({
+        text,
+        roomId: this.state.currentRoom.id,
+        })
     }
 
     componentDidMount () {
@@ -25,13 +42,25 @@ class ChatScreen extends Component {
             .connect()
             .then(currentUser => {
                 this.setState({ currentUser })
-                return currentUser.suscribeToRoom({
+                return currentUser.subscribeToRoom({
                     roomId: 15641560,
                     messageLimit: 100,
                     hooks: {
                         onNewMessage: message => {
                             this.setState({
                                 messages: [...this.state.messages, message],
+                            })
+                        },
+                        onUserStartedTyping: user => {
+                            this.setState({
+                                usersWhoAreTyping: [...this.state.usersWhoAreTyping, user.name],
+                            })
+                        },
+                        onUserStoppedTyping: user => {
+                            this.setState({
+                                usersWhoAreTyping: this.state.usersWhoAreTyping.filter(
+                                    username => username !== user.name
+                                ),
                             })
                         }
                     }
@@ -78,6 +107,11 @@ class ChatScreen extends Component {
                         <MessageList
                             messages={this.state.messages}
                             style={styles.chatList}
+                        />
+                        <TypingIndicator usersWhoAreTyping={this.state.usersWhoAreTyping} />
+                        <SendMessageForm 
+                            onSubmit={this.sendMessage} 
+                            onChange={this.sendTypingEvent}
                         />
                     </section>
                 </div>
